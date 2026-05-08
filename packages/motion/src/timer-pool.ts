@@ -22,11 +22,11 @@ const pool = new Map<number, { id: ReturnType<typeof setInterval>; subs: Set<() 
  */
 export function subscribe(delayMs: number, cb: () => void): () => void {
     if (!pool.has(delayMs)) {
-        const entry = { id: null as any, subs: new Set<() => void>() };
-        entry.id = setInterval(() => {
-            for (const s of entry.subs) s();
+        const subs = new Set<() => void>();
+        const id = setInterval(() => {
+            for (const s of subs) s();
         }, delayMs);
-        pool.set(delayMs, entry);
+        pool.set(delayMs, { id, subs });
     }
     pool.get(delayMs)!.subs.add(cb);
 

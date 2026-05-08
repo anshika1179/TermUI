@@ -171,6 +171,9 @@ importers:
       '@termuijs/core':
         specifier: workspace:*
         version: link:../core
+      '@termuijs/motion':
+        specifier: workspace:*
+        version: link:../motion
       '@termuijs/widgets':
         specifier: workspace:*
         version: link:../widgets

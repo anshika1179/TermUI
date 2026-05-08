@@ -3,11 +3,11 @@
 // ─────────────────────────────────────────────────────
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { timerPoolUnsubscribeAll } from '@termuijs/motion';
 import {
     createFiber, setCurrentFiber, clearCurrentFiber,
     useState, useEffect, useRef, useCallback,
     useAsync, useInterval, setRequestRender, runEffects, destroyFiber,
-    _timerPoolSize, _timerPoolClear,
     type Fiber, type AsyncState,
 } from './hooks.js';
 
@@ -15,44 +15,59 @@ describe('useInterval — shared timer pool', () => {
     beforeEach(() => {
         vi.useFakeTimers();
         setRequestRender(() => { });
-        _timerPoolClear();
+        timerPoolUnsubscribeAll();
     });
 
     afterEach(() => {
-        _timerPoolClear();
+        timerPoolUnsubscribeAll();
         vi.useRealTimers();
         clearCurrentFiber();
     });
 
     it('creates exactly one pool entry for two components sharing the same delayMs', () => {
+        const cbA = vi.fn();
+        const cbB = vi.fn();
         const fiberA = createFiber();
         const fiberB = createFiber();
 
         setCurrentFiber(fiberA);
-        useInterval(() => { }, 500);
+        useInterval(cbA, 500);
         clearCurrentFiber();
 
         setCurrentFiber(fiberB);
-        useInterval(() => { }, 500);
+        useInterval(cbB, 500);
         clearCurrentFiber();
 
-        // Both subscribed to 500 ms → pool should have exactly 1 entry
-        expect(_timerPoolSize()).toBe(1);
+        // Both subscribed to 500 ms — both callbacks fire on each tick
+        vi.advanceTimersByTime(500);
+        expect(cbA).toHaveBeenCalledTimes(1);
+        expect(cbB).toHaveBeenCalledTimes(1);
+
+        destroyFiber(fiberA);
+        destroyFiber(fiberB);
     });
 
     it('creates two pool entries for two different delays', () => {
+        const cbA = vi.fn();
+        const cbB = vi.fn();
         const fiberA = createFiber();
         const fiberB = createFiber();
 
         setCurrentFiber(fiberA);
-        useInterval(() => { }, 250);
+        useInterval(cbA, 250);
         clearCurrentFiber();
 
         setCurrentFiber(fiberB);
-        useInterval(() => { }, 1000);
+        useInterval(cbB, 1000);
         clearCurrentFiber();
 
-        expect(_timerPoolSize()).toBe(2);
+        // After 1000 ms: cbA fires 4 times (250, 500, 750, 1000), cbB fires 1 time
+        vi.advanceTimersByTime(1000);
+        expect(cbA).toHaveBeenCalledTimes(4);
+        expect(cbB).toHaveBeenCalledTimes(1);
+
+        destroyFiber(fiberA);
+        destroyFiber(fiberB);
     });
 
     it('invokes the callback on each tick', () => {
@@ -65,29 +80,34 @@ describe('useInterval — shared timer pool', () => {
 
         vi.advanceTimersByTime(300);
         expect(cb).toHaveBeenCalledTimes(3);
+
+        destroyFiber(fiber);
     });
 
-    it('removes pool entry when last subscriber is destroyed', () => {
+    it('stops firing for destroyed subscriber while the other keeps running', () => {
+        const cbA = vi.fn();
+        const cbB = vi.fn();
         const fiberA = createFiber();
         const fiberB = createFiber();
 
         setCurrentFiber(fiberA);
-        useInterval(() => { }, 500);
+        useInterval(cbA, 500);
         clearCurrentFiber();
 
         setCurrentFiber(fiberB);
-        useInterval(() => { }, 500);
+        useInterval(cbB, 500);
         clearCurrentFiber();
 
-        expect(_timerPoolSize()).toBe(1);
-
         destroyFiber(fiberA);
-        // One subscriber still active — pool entry must remain
-        expect(_timerPoolSize()).toBe(1);
+        // fiberA unsubscribed — fiberB still active
+        vi.advanceTimersByTime(500);
+        expect(cbA).toHaveBeenCalledTimes(0);
+        expect(cbB).toHaveBeenCalledTimes(1);
 
         destroyFiber(fiberB);
-        // No subscribers left — pool entry must be gone
-        expect(_timerPoolSize()).toBe(0);
+        // Both gone — no more ticks
+        vi.advanceTimersByTime(500);
+        expect(cbB).toHaveBeenCalledTimes(1);
     });
 
     it('stops firing after destroyFiber', () => {
@@ -127,6 +147,35 @@ describe('useInterval — shared timer pool', () => {
 
         vi.advanceTimersByTime(100);
         expect(results).toEqual(['first', 'second']);
+
+        destroyFiber(fiber);
+    });
+
+    it('switches to new interval rate when delayMs changes on re-render', () => {
+        const cb = vi.fn();
+        const fiber = createFiber();
+
+        // First render: 100 ms interval
+        setCurrentFiber(fiber);
+        useInterval(cb, 100);
+        clearCurrentFiber();
+
+        vi.advanceTimersByTime(200);
+        expect(cb).toHaveBeenCalledTimes(2);
+
+        // Re-render: change to 500 ms
+        fiber.hookIndex = 0;
+        setCurrentFiber(fiber);
+        useInterval(cb, 500);
+        clearCurrentFiber();
+
+        // Advance 400 ms — not yet a full 500 ms tick, so no new calls
+        vi.advanceTimersByTime(400);
+        expect(cb).toHaveBeenCalledTimes(2);
+
+        // Advance another 100 ms to complete the 500 ms cycle
+        vi.advanceTimersByTime(100);
+        expect(cb).toHaveBeenCalledTimes(3);
 
         destroyFiber(fiber);
     });

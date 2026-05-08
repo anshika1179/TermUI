@@ -7,6 +7,7 @@
 // ─────────────────────────────────────────────────────
 
 import type { KeyEvent } from '@termuijs/core';
+import { timerPoolSubscribe } from '@termuijs/motion';
 
 // ── Fiber — per-component-instance state ──
 
@@ -35,43 +36,6 @@ interface EffectRecord {
     deps?: any[];
     cleanup?: () => void;
     ran: boolean;
-}
-
-// ── Module-level timer pool ──
-//
-// One setInterval per unique delayMs, shared across all component instances
-// in this process. Reduces OS timer pressure when many components poll at
-// the same interval (e.g. a hundred widgets all at 1 000 ms → 1 timer).
-
-const _timerPool = new Map<number, { id: ReturnType<typeof setInterval>; subs: Set<() => void> }>();
-
-function _poolSubscribe(delayMs: number, cb: () => void): () => void {
-    if (!_timerPool.has(delayMs)) {
-        const entry = { id: null as any, subs: new Set<() => void>() };
-        entry.id = setInterval(() => {
-            for (const s of entry.subs) s();
-        }, delayMs);
-        _timerPool.set(delayMs, entry);
-    }
-    _timerPool.get(delayMs)!.subs.add(cb);
-    return () => {
-        const entry = _timerPool.get(delayMs);
-        if (!entry) return;
-        entry.subs.delete(cb);
-        if (entry.subs.size === 0) {
-            clearInterval(entry.id);
-            _timerPool.delete(delayMs);
-        }
-    };
-}
-
-/** @internal — exposed for testing only. Returns current pool entry count. */
-export function _timerPoolSize(): number { return _timerPool.size; }
-
-/** @internal — exposed for testing only. Drains the entire pool (call in afterEach). */
-export function _timerPoolClear(): void {
-    for (const entry of _timerPool.values()) clearInterval(entry.id);
-    _timerPool.clear();
 }
 
 // ── Global state ──
@@ -253,17 +217,32 @@ export function useInterval(callback: () => void, delayMs: number): void {
     if (idx >= fiber.hooks.length) {
         // First render: subscribe to the shared pool with a mutable callback ref
         const callbackRef = { current: callback };
-        const unsub = _poolSubscribe(delayMs, () => {
+        const unsub = timerPoolSubscribe(delayMs, () => {
             callbackRef.current();
-            scheduleRender();
+            scheduleRender(fiber);
         });
-        fiber.hooks.push({ value: { unsub, callbackRef } });
+        fiber.hooks.push({ value: { unsub, callbackRef, delayMs } });
         // Register unsub in cleanups so destroyFiber unsubscribes automatically
         fiber.cleanups.push(unsub);
         // NOTE: do NOT push to fiber.intervals — unsub handles pool cleanup
     } else {
         // Re-render: update the callback ref to avoid stale closures
-        fiber.hooks[idx].value.callbackRef.current = callback;
+        const stored = fiber.hooks[idx].value;
+        stored.callbackRef.current = callback;
+        if (stored.delayMs !== delayMs) {
+            // delayMs changed: unsub from old interval, subscribe at new rate
+            const oldUnsub = stored.unsub;
+            const newUnsub = timerPoolSubscribe(delayMs, () => {
+                stored.callbackRef.current();
+                scheduleRender(fiber);
+            });
+            stored.unsub = newUnsub;
+            stored.delayMs = delayMs;
+            // Replace old cleanup entry with new one
+            const ci = fiber.cleanups.indexOf(oldUnsub);
+            if (ci !== -1) fiber.cleanups[ci] = newUnsub;
+            oldUnsub();
+        }
     }
 }
 
