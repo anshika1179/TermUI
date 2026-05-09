@@ -3,7 +3,19 @@
 // ─────────────────────────────────────────────────────
 
 import { EventEmitter } from '@termuijs/core';
+import { createElement, ErrorBoundary, unmountAll, type VNode } from '@termuijs/jsx';
 import { type Route, type RouteMatch, type RouteParams, matchRoute, compilePattern } from './route.js';
+
+function defaultErrorScreen(err: Error): VNode {
+    return {
+        type: 'box',
+        props: { border: 'single', borderColor: 'red', padding: 1 },
+        children: [
+            { type: 'text', props: { color: 'red', bold: true }, children: ['Router Error'] },
+            { type: 'text', props: {}, children: [err.message] },
+        ],
+    } as any;
+}
 
 export interface RouterEvents {
     navigate: RouteMatch;
@@ -56,7 +68,12 @@ export class Router {
             this._history = this._history.slice(-this._maxHistory);
         }
         this._currentMatch = match;
-        this.events.emit('navigate', match);
+        unmountAll();
+        const wrapped = createElement(ErrorBoundary,
+            { fallback: (err: Error) => defaultErrorScreen(err) },
+            createElement(match.route.component, match.params)
+        );
+        this.events.emit('navigate', { ...match, component: wrapped } as any);
     }
 
     /** Replace current path */
@@ -72,7 +89,12 @@ export class Router {
             this._history.push(path);
         }
         this._currentMatch = match;
-        this.events.emit('navigate', match);
+        unmountAll();
+        const wrapped = createElement(ErrorBoundary,
+            { fallback: (err: Error) => defaultErrorScreen(err) },
+            createElement(match.route.component, match.params)
+        );
+        this.events.emit('navigate', { ...match, component: wrapped } as any);
     }
 
     /** Go back in history */
@@ -82,7 +104,16 @@ export class Router {
         const prevPath = this._history[this._history.length - 1];
         const match = prevPath ? matchRoute(prevPath, this._routes) : null;
         this._currentMatch = match;
-        this.events.emit('back', match);
+        unmountAll();
+        if (match) {
+            const wrapped = createElement(ErrorBoundary,
+                { fallback: (err: Error) => defaultErrorScreen(err) },
+                createElement(match.route.component, match.params)
+            );
+            this.events.emit('back', { ...match, component: wrapped } as any);
+        } else {
+            this.events.emit('back', null);
+        }
     }
 
     /** Current route match */

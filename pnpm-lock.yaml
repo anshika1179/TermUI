@@ -244,6 +244,9 @@ importers:
       '@termuijs/core':
         specifier: workspace:*
         version: link:../core
+      '@termuijs/jsx':
+        specifier: workspace:*
+        version: link:../jsx
       '@termuijs/widgets':
         specifier: workspace:*
         version: link:../widgets
