@@ -235,6 +235,7 @@ export interface KeyBinding {
     shift?: boolean;
     action: () => void;
     description?: string;
+    category?: string;
 }
 
 /**

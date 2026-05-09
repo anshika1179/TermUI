@@ -59,3 +59,15 @@ export type { TextPromptOptions, ConfirmPromptOptions, SelectPromptOptions } fro
 
 export { NotificationCenter, NotificationStore, notifications, useNotifications } from './NotificationCenter.js';
 export type { Notification, NotificationCenterOptions } from './NotificationCenter.js';
+
+export { PasswordInput } from './PasswordInput.js';
+export type { PasswordInputOptions } from './PasswordInput.js';
+
+export { NumberInput } from './NumberInput.js';
+export type { NumberInputOptions } from './NumberInput.js';
+
+export { PathInput } from './PathInput.js';
+export type { PathInputOptions } from './PathInput.js';
+
+export { KeyboardShortcuts } from './KeyboardShortcuts.js';
+export type { ShortcutBinding, KeyboardShortcutsOptions } from './KeyboardShortcuts.js';
