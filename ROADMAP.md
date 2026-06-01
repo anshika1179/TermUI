@@ -1,52 +1,60 @@
 # TermUI Roadmap
 
-This file shows where TermUI is and where it is going. Use it to pick work that fits your skill level.
+This file shows where TermUI is, what is in progress, and what comes next. Use it to find work that fits your skill level.
 
-The full version with details lives in the [Roadmap wiki page](https://github.com/Karanjot786/TermUI/wiki/Roadmap).
+Full version with details: [Roadmap wiki page](https://github.com/Karanjot786/TermUI/wiki/Roadmap).
 
 ## Current state (v0.1.x)
 
 TermUI ships a working core today:
 
-- Layout engine with flexbox rules
-- Differential renderer (only changed cells redraw)
+- Layout engine with flexbox and constraint rules
+- Differential renderer. Only changed cells redraw.
 - JSX runtime and React-style hooks
 - 13 packages, 600+ tests passing
 - Theming, animations, routing, hot-reload dev server
+- 40+ widgets and a headless test harness
 
-## Waves
-
-Work is grouped into waves. Claim any issue in an open wave.
+## Where work stands
 
 | Wave | Focus | Status |
 |---|---|---|
 | Wave 1 | Core widgets | Merging now |
-| Wave 2 | Beginner capabilities and adapters | Open |
-| Wave 3 | Intermediate hooks, prompts, rendering | Open |
-| Wave 4 | Advanced layout, registry, templates | Open |
+| Waves 2 to 4 | Capabilities, adapters, prompts, registry, templates | All assigned |
+| Wave 5 | Coverage and polish | Opening next |
+| Waves 6 to 10 | Widgets, hooks, subsystems, DX, differentiators | Planned |
 
-## By difficulty
+Every issue in waves 1 to 4 is assigned. If you arrived now, start with Wave 5 or watch the planned waves below. Open a new issue for anything you find missing.
 
-| Level | What it looks like | Where to start |
-|---|---|---|
-| Beginner | Single file, clear spec, 1 to 2 tests | [good first issues](https://github.com/Karanjot786/TermUI/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) |
-| Intermediate | Multiple files, reads the architecture | [intermediate issues](https://github.com/Karanjot786/TermUI/issues?q=is%3Aissue+is%3Aopen+label%3A%22level%3Aintermediate%22) |
-| Advanced | Multi-file, design judgment | [advanced issues](https://github.com/Karanjot786/TermUI/issues?q=is%3Aissue+is%3Aopen+label%3A%22level%3Aadvanced%22) |
+## Wave 5: Coverage and polish (beginner, no feature code)
 
-## Future direction
+- Tests for untested code: `dev-server` and `testing` have zero tests; `ui` has 9 untested components; `widgets` has 12.
+- Examples not built yet: forms-and-validation, multi-screen-router, ai-streaming, auth-flow, cli-wrapper-live.
+- Docs: "Choosing your API" guide, `DEVELOPMENT.md`, expanded thin READMEs.
 
-These land after the current waves:
+## Wave 6: New widgets (beginner to intermediate)
 
-- Mouse support (hit-grid architecture)
-- Component registry (shadcn-style)
-- AI widget suite (ChatThread, ToolApproval, TokenUsage)
-- Accessibility metadata for screen readers
+DatePicker, TimePicker, ColorPicker, Slider, RangeInput, Autocomplete, SearchableSelect, TreeTable, MultilineTextInput, SegmentedControl, Carousel, ContextMenu.
 
-Shape these in the open RFCs:
+## Wave 7: Hooks and core depth (intermediate)
 
-- [Adapters package bootstrap](https://github.com/Karanjot786/TermUI/issues/58)
-- [Component registry design](https://github.com/Karanjot786/TermUI/issues/59)
-- [Mouse support architecture](https://github.com/Karanjot786/TermUI/issues/60)
+useReducer, useLayoutEffect, useId, useImperativeHandle, Suspense, lazy(), Portal, clipboard read and paste, wide-character fallback.
+
+## Wave 8: Subsystem depth (intermediate to advanced)
+
+- Store: middleware, persist, computed selectors, immutable helpers
+- Motion: keyframes, custom easing, chained sequences, 2D vectors
+- Router: lazy routes, guards, nested routes, query strings, param validation
+- TSS: nesting, mixins, color functions, pseudo-class states, imports
+- Data: WebSocket, REST client, caching, time-series history
+
+## Wave 9: Developer experience (intermediate to advanced)
+
+Error overlay, theme hot reload, devtools inspector UI, snapshot testing, accessibility test queries, VS Code snippets, scaffold improvements.
+
+## Wave 10: Strategic differentiators (advanced, mentor-led)
+
+Command palette v2, web serving, plugin architecture, full styling system, demo recording tool, interactive playground and gallery. Each starts as an RFC.
 
 ## How to pick work
 
@@ -55,4 +63,10 @@ Shape these in the open RFCs:
 3. Read the issue. Comment "I would like to work on this".
 4. Wait for assignment, then open your PR within 7 days.
 
-Found a gap not on the roadmap? Open a new issue. New ideas are welcome.
+Found a gap not on this roadmap? Open a new issue. New ideas are welcome.
+
+## Open RFCs
+
+- [Adapters package bootstrap](https://github.com/Karanjot786/TermUI/issues/58)
+- [Component registry design](https://github.com/Karanjot786/TermUI/issues/59)
+- [Mouse support architecture](https://github.com/Karanjot786/TermUI/issues/60)
