@@ -1,5 +1,5 @@
 import { Widget } from '../base/Widget.js';
-import { type Style, type Color, caps, styleToCellAttrs, parseColor } from '@termuijs/core';
+import { type Style, type Color, type Screen, caps, styleToCellAttrs, parseColor, stringWidth } from '@termuijs/core';
 
 export interface LinkOptions {
     /** URL the OSC 8 escape points to */
@@ -21,14 +21,10 @@ export class Link extends Widget {
         
         this._text = text;
         this._url = opts?.url ?? '';
-        // Parse 'blue' into the proper Color object structure if no custom Color object is provided
         this._color = opts?.color ?? parseColor('blue');
         this._showUrlFallback = opts?.showUrlFallback ?? true;
     }
 
-    /**
-     * Updates the link display text.
-     */
     public setText(text: string): void {
         if (this._text !== text) {
             this._text = text;
@@ -36,9 +32,6 @@ export class Link extends Widget {
         }
     }
 
-    /**
-     * Updates the destination URL.
-     */
     public setUrl(url: string): void {
         if (this._url !== url) {
             this._url = url;
@@ -47,35 +40,64 @@ export class Link extends Widget {
     }
 
     /**
-     * Renders the Link widget into the terminal screen buffer.
+     * Helper to safely slice a string by its visual terminal cell width
      */
-    protected _renderSelf(screen: any): void {
+    private _sliceByWidth(str: string, maxWidth: number): string {
+        let currentWidth = 0;
+        let result = '';
+        
+        // Loop through code points safely (handles emojis and surrogates)
+        for (const char of str) {
+            const charWidth = stringWidth(char);
+            if (currentWidth + charWidth > maxWidth) {
+                break;
+            }
+            result += char;
+            currentWidth += charWidth;
+        }
+        return result;
+    }
+
+    /**
+     * Renders the Link widget into the typed Screen buffer context.
+     */
+    protected _renderSelf(screen: Screen): void {
         const rect = this._getContentRect();
         if (rect.width <= 0 || rect.height <= 0) {
             return;
         }
 
-        // Apply underlying styles
         const cellAttrs = styleToCellAttrs({
             underline: true,
             fg: this._color,
             ...this.style,
         });
 
-        let outputText = this._text;
+        let targetText = this._text;
+
+        // Truncate only the printable text portion visually before wrapping
+        if (stringWidth(targetText) > rect.width) {
+            targetText = this._sliceByWidth(targetText, rect.width);
+        }
+
+        let outputPayload = targetText;
 
         if (caps.unicode) {
-            // OSC 8 Hyperlink formatting sequence
-            outputText = `\x1b]8;;${this._url}\x1b\\${this._text}\x1b]8;;\x1b\\`;
+            // Raw OSC 8 hyperlinks structure wrap
+            outputPayload = `\x1b]8;;${this._url}\x1b\\${targetText}\x1b]8;;\x1b\\`;
         } else if (this._showUrlFallback && this._url) {
-            // Non-unicode fallback behavior
-            outputText = `${this._text} (${this._url})`;
+            const fallbackSuffix = ` (${this._url})`;
+            
+            if (stringWidth(targetText + fallbackSuffix) > rect.width) {
+                const availableWidthForText = rect.width - stringWidth(fallbackSuffix);
+                outputPayload = availableWidthForText > 0 
+                    ? this._sliceByWidth(targetText, availableWidthForText) + fallbackSuffix
+                    : this._sliceByWidth(fallbackSuffix, rect.width);
+            } else {
+                outputPayload = targetText + fallbackSuffix;
+            }
         }
 
-        if (outputText.length > rect.width) {
-            outputText = outputText.substring(0, rect.width);
-        }
-
-        screen.writeString(rect.x, rect.y, outputText, cellAttrs);
+        screen.writeString(rect.x, rect.y, outputPayload, cellAttrs);
     }
 }
