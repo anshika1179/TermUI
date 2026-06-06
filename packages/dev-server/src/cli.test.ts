@@ -1,5 +1,6 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { DevServer } from './server.js';
+import { runCli } from './cli.js';
 
 vi.mock('./server.js', () => {
     return {
@@ -11,23 +12,12 @@ vi.mock('./server.js', () => {
 });
 
 describe('CLI', () => {
-    let originalArgv: string[];
-
     beforeEach(() => {
-        originalArgv = process.argv;
         vi.clearAllMocks();
     });
 
-    afterEach(() => {
-        process.argv = originalArgv;
-    });
-
-    it('parses arguments and starts dev server', async () => {
-        process.argv = ['node', 'cli.ts', './my-dir', '--entry', 'src/main.ts'];
-        
-        // Dynamically import to execute the cli script
-        // We use a query parameter to avoid module caching issues if run multiple times
-        await import('./cli.ts?t=' + Date.now());
+    it('parses arguments and starts dev server', () => {
+        runCli(['./my-dir', '--entry', 'src/main.ts']);
 
         expect(DevServer).toHaveBeenCalledWith(expect.objectContaining({
             rootDir: './my-dir',
