@@ -111,7 +111,6 @@ describe('Widget', () => {
         w.updateRect({ x: 0, y: 0, width: 10, height: 5 });
         expect(w.isDirty).toBe(true);
         w.render(screen);
-        // Should remain dirty because of the error
         expect(w.isDirty).toBe(true);
         expect(w.renderError).toBeInstanceOf(Error);
     });
@@ -124,10 +123,8 @@ describe('Widget', () => {
         child.updateRect({ x: 0, y: 0, width: 10, height: 5 });
         parent.updateRect({ x: 0, y: 0, width: 10, height: 5 });
         parent.render(screen);
-        // clearDirty should not clear child with error
         parent.clearDirty();
         expect(child.isDirty).toBe(true);
-        // Parent should also remain dirty because child has error
         expect(parent.isDirty).toBe(true);
     });
 
@@ -135,15 +132,39 @@ describe('Widget', () => {
         const w = new RecoversWidget();
         const screen = new Screen(10, 5);
         w.updateRect({ x: 0, y: 0, width: 10, height: 5 });
-        // First render — fails
         w.render(screen);
         expect(w.renderError).toBeInstanceOf(Error);
         expect(w.isDirty).toBe(true);
-        // Second render — succeeds
-        w.clearDirty(); // Simulate clearDirty being called before next frame
-        w._renderError = null; // Simulate error recovery
+        w.clearDirty();
+        w._renderError = null;
         w.render(screen);
         expect(w.renderError).toBeNull();
         expect(w.callCount).toBe(2);
+    });
+
+    describe('isActive() Lifecycle', () => {
+        class FocusableTestWidget extends Widget {
+            focusable = true;
+            protected _renderSelf(): void {}
+        }
+
+        it('should return false when the widget is not active', () => {
+            const widget = new FocusableTestWidget();
+            expect(widget.isActive()).toBe(false);
+        });
+
+        it('should return true after the widget is activated', () => {
+            const widget = new FocusableTestWidget();
+            widget.isFocused = true;
+            expect(widget.isActive()).toBe(true);
+        });
+
+        it('should return false again after deactivation', () => {
+            const widget = new FocusableTestWidget();
+            widget.isFocused = true;
+            expect(widget.isActive()).toBe(true);
+            widget.isFocused = false;
+            expect(widget.isActive()).toBe(false);
+        });
     });
 });
