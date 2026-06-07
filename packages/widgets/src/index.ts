@@ -102,8 +102,12 @@ export { StatusMessage } from './feedback/StatusMessage.js';
 export type { StatusMessageOptions, StatusVariant } from './feedback/StatusMessage.js';
 export { Banner } from './feedback/Banner.js';
 export type { BannerOptions } from './feedback/Banner.js';
+export { Alert } from './feedback/Alert.js';
+export type { AlertOptions } from './feedback/Alert.js';
+
 export { EmptyState } from './feedback/EmptyState.js';
 export type { EmptyStateOptions } from './feedback/EmptyState.js';
+
 export { Callout } from './feedback/Callout.js';
 export type { CalloutVariant, CalloutOptions } from './feedback/Callout.js';
 
