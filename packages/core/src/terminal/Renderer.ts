@@ -192,7 +192,7 @@ export class Renderer {
             case 'named': fgKey = `N:${fg.name}`; break;
             case 'ansi256': fgKey = `A:${fg.code}`; break;
             case 'rgb': fgKey = `R:${fg.r},${fg.g},${fg.b}`; break;
-            case 'hex': fgKey = `H:${fg.hex}`; break;
+            case 'hex': fgKey = `H:${fg.hex.toLowerCase()}`; break;
             default: fgKey = 'n';
         }
         let bgKey: string;
@@ -201,7 +201,7 @@ export class Renderer {
             case 'named': bgKey = `N:${bg.name}`; break;
             case 'ansi256': bgKey = `A:${bg.code}`; break;
             case 'rgb': bgKey = `R:${bg.r},${bg.g},${bg.b}`; break;
-            case 'hex': bgKey = `H:${bg.hex}`; break;
+            case 'hex': bgKey = `H:${bg.hex.toLowerCase()}`; break;
             default: bgKey = 'n';
         }
         return `${cell.bold ? 'B' : ''}${cell.dim ? 'D' : ''}${cell.italic ? 'I' : ''}${cell.underline ? 'U' : ''}${cell.strikethrough ? 'S' : ''}${cell.inverse ? 'V' : ''}|${fgKey}|${bgKey}`;
