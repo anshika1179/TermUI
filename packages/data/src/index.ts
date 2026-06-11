@@ -74,3 +74,7 @@ export { database } from './database.js';
 export type { DatabaseConfig, DatabaseHealth } from './database.js';
 export { useDatabaseHealth } from './hooks/useDatabaseHealth.js';
 export type { UseDatabaseHealthResult } from './hooks/useDatabaseHealth.js';
+export { docker } from './docker.js';
+export type { DockerContainer, DockerContainerStats } from './docker.js';
+export { useDocker } from './hooks/useDocker.js';
+export type { UseDockerResult } from './hooks/useDocker.js';
