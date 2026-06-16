@@ -21,7 +21,7 @@ export class Select extends Widget {
 
     constructor(options: SelectOption[], config: SelectOptions = {}, style?: Partial<Style>) {
         super(mergeStyles(mergeStyles(defaultStyle(), { height: 1 }), style ?? {}));
-        this._closedHeight = this._style.height ?? 1;
+        this._closedHeight = typeof this._style.height === 'number' ? this._style.height : 1;
         this._options = options;
         this._placeholder = config.placeholder ?? 'Select...';
         this._activeColor = config.activeColor ?? { type: 'named', name: 'cyan' };
