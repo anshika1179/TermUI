@@ -68,6 +68,7 @@ export {
     relativeLuminance, contrastRatio, wcagLevel, validateThemeContrast,
 } from './style/Color.js';
 export type { Color, NamedColor, ContrastFailure } from './style/Color.js';
+export { adjustForContrast } from './style/contrast.js';
 
 // ── Symbols ───────────────────────────────────────────
 export {
@@ -101,3 +102,5 @@ export { throttle } from './utils/throttle.js';
 export type { ThrottleOptions } from './utils/throttle.js';
 export { CommandHistory } from "./history/CommandHistory.js";
 export type { CommandHistoryOptions } from "./history/CommandHistory.js";
+export * from './errors.js';
+

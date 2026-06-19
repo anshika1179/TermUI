@@ -25,6 +25,8 @@ export { StreamingText } from './display/StreamingText.js';
 export type { StreamingTextOptions } from './display/StreamingText.js';
 export { ChatMessage } from './display/ChatMessage.js';
 export type { ChatMessageOptions, MessageRole } from './display/ChatMessage.js';
+export { ChatThread } from './display/ChatThread.js';
+export type { ThreadMessage } from './display/ChatThread.js';
 export { ToolCall, ToolApproval } from './display/ToolCall.js';
 export type { ToolCallOptions, ToolApprovalOptions, ToolCallStatus } from './display/ToolCall.js';
 export { Canvas } from './display/Canvas.js';
@@ -51,6 +53,8 @@ export { CommandPalette } from './input/CommandPalette.js';
 export type { Command, CommandPaletteOptions } from './input/CommandPalette.js';
 export { Button } from './input/Button.js';
 export type { ButtonOptions, ButtonVariant } from './input/Button.js';
+export { Checkbox } from './input/Checkbox.js';
+export type { CheckboxOptions } from './input/Checkbox.js';
 
 export { Slider } from "./input/Slider.js";
 export type { SliderOptions } from "./input/Slider.js";
