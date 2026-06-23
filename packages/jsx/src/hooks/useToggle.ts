@@ -1,4 +1,4 @@
-import { useState } from '../hooks.js';
+import { useBoolean } from './useBoolean.js';
 
 export interface UseToggleResult {
   toggle: () => void;
@@ -7,11 +7,11 @@ export interface UseToggleResult {
 }
 
 export function useToggle(initialValue = false): [boolean, UseToggleResult] {
-  const [value, setValue] = useState(initialValue);
+  const [value, { toggle, setTrue, setFalse }] = useBoolean(initialValue);
 
   return [value, {
-    toggle: () => setValue((prev) => !prev),
-    on: () => setValue(true),
-    off: () => setValue(false),
+    toggle,
+    on: setTrue,
+    off: setFalse,
   }];
 }
