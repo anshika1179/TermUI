@@ -150,7 +150,11 @@ export function BrowserPreview({
         const app = new App(widget, opts)
         app.mount().catch(console.error)
 
+        // Re-fit after browser has computed final layout — onResize propagates cols/rows to App
+        const rafId = requestAnimationFrame(() => fitAddon.fit())
+
         return () => {
+            cancelAnimationFrame(rafId)
             app.unmount()
             term.dispose()
         }
