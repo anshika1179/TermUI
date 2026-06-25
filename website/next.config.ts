@@ -5,6 +5,13 @@ const withMDX = createMDX()
 
 const config: NextConfig = {
   reactStrictMode: true,
+  turbopack: {
+    resolveAlias: {
+      child_process: { browser: './src/lib/empty-child-process.ts' },
+      net:           { browser: './src/lib/empty.js' },
+      tls:           { browser: './src/lib/empty.js' },
+    },
+  },
   webpack(cfg, { isServer }) {
     if (!isServer) {
       cfg.resolve.fallback = {
@@ -17,6 +24,9 @@ const config: NextConfig = {
         path: false,
         os: false,
         crypto: false,
+        child_process: false,
+        net: false,
+        tls: false,
       }
       cfg.resolve.alias = {
         ...cfg.resolve.alias,

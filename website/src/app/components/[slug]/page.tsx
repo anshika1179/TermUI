@@ -1,17 +1,12 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import dynamic from 'next/dynamic'
 import rawRegistry from '@/data/registry.json'
 import { PackageTabs } from '@/components/docs/PackageTabs'
 import { CodeTabs, TabsList, TabsTrigger, TabsContent } from '@/components/docs/CodeTabs'
 import { ApiTable } from '@/components/docs/ApiTable'
-import demos from '../../../data/demos'
-
-const BrowserPreview = dynamic(
-    () => import('../../../components/docs/BrowserPreview').then(m => m.BrowserPreview),
-    { ssr: false }
-)
+import { BrowserPreviewLoader } from '@/components/docs/BrowserPreviewLoader'
+import demoSlugs from '../../../data/demoSlugs'
 
 interface RegistryEntry {
     name: string
@@ -270,9 +265,9 @@ export default async function ComponentDetailPage({
                             <span className="cd-mac-ps">$</span>
                             <span>termuijs render {comp.slug}</span>
                         </div>
-                        {demos[comp.slug]
+                        {demoSlugs.has(comp.slug)
                             ? <div className="cd-mac-body">
-                                  <BrowserPreview factory={demos[comp.slug]!} cols={58} rows={16} mouse />
+                                  <BrowserPreviewLoader slug={comp.slug} cols={58} rows={16} mouse />
                               </div>
                             : <pre className="cd-mac-body">
                                   <code>{ascii}</code>
