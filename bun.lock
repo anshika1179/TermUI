@@ -429,6 +429,22 @@
         "zod",
       ],
     },
+    "packages/cli": {
+      "name": "@termuijs/cli",
+      "version": "0.1.0",
+      "bin": {
+        "termuijs": "./dist/index.js",
+      },
+      "dependencies": {
+        "@termuijs/core": "workspace:*",
+        "@termuijs/widgets": "workspace:*",
+      },
+      "devDependencies": {
+        "tsup": "^8.0.0",
+        "typescript": "^5.3.0",
+        "vitest": "^4.1.8",
+      },
+    },
     "packages/core": {
       "name": "@termuijs/core",
       "version": "0.1.6",
@@ -1020,6 +1036,8 @@
     "@tanstack/store": ["@tanstack/store@0.9.3", "", {}, "sha512-8reSzl/qGWGGVKhBoxXPMWzATSbZLZFWhwBAFO9NAyp0TxzfBP0mIrGb8CP8KrQTmvzXlR/vFPPUrHTLBGyFyw=="],
 
     "@termuijs/adapters": ["@termuijs/adapters@workspace:packages/adapters"],
+
+    "@termuijs/cli": ["@termuijs/cli@workspace:packages/cli"],
 
     "@termuijs/core": ["@termuijs/core@workspace:packages/core"],
 
