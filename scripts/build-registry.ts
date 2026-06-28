@@ -291,11 +291,11 @@ export function buildRegistryEntries(): RegistryEntry[] {
     }
   }
 
-  // deduplicate by name (keep first occurrence)
+  // deduplicate by slug (keep first occurrence)
   const seen = new Set<string>();
   return entries.filter(e => {
-    if (seen.has(e.name)) return false;
-    seen.add(e.name);
+    if (seen.has(e.slug)) return false;
+    seen.add(e.slug);
     return true;
   });
 }
@@ -323,6 +323,13 @@ async function main(): Promise<void> {
     writeFileSync(join(publicDir, 'registry.json'), JSON.stringify(entries, null, 2));
     console.log(`✓ ${publicDir.replace(ROOT + '/', '')} — ${entries.length} files + registry.json`);
   }
+
+  // The app imports website/src/data/registry.json. Write a slim copy: metadata
+  // plus api, without the heavy files/dependencies (those live in public/r).
+  const slim = entries.map(({ files: _files, dependencies: _deps, ...rest }) => rest);
+  const srcData = join(ROOT, 'website', 'src', 'data', 'registry.json');
+  writeFileSync(srcData, JSON.stringify(slim, null, 2));
+  console.log(`✓ website/src/data/registry.json — ${slim.length} entries (slim + api)`);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
