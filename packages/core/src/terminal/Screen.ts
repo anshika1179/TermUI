@@ -102,13 +102,27 @@ function colorsEqual(a: Color, b: Color): boolean {
     }
 }
 
+/** ASCII hex digit char code -> 0-15, branch-free-ish (no string allocation). */
+function hexDigit(code: number): number {
+    // '0'-'9' = 48-57, 'A'-'F' = 65-70, 'a'-'f' = 97-102
+    return code >= 97 ? code - 87 : code >= 65 ? code - 55 : code - 48;
+}
+
 function hashColor(color: Color, hash: number): number {
     switch (color.type) {
         case 'none':    return ((hash << 3) - hash) | 0;
         case 'named':   return ((hash << 5) - hash + color.name.charCodeAt(0) * 256 + color.name.charCodeAt(color.name.length - 1)) | 0;
         case 'ansi256': return ((hash << 7) - hash + color.code) | 0;
         case 'rgb':     return ((hash << 9) - hash + color.r * 65536 + color.g * 256 + color.b) | 0;
-        case 'hex':     { let h = hash; for (let i = 0; i < color.hex.length; i++) h = ((h << 5) - h + color.hex.charCodeAt(i)) | 0; return h; }
+        case 'hex':     {
+            // '#rrggbb' — decode the 3 byte pairs directly via charCodeAt instead of
+            // looping over the string (this runs per-cell in the render hot path).
+            const s = color.hex;
+            const r = (hexDigit(s.charCodeAt(1)) << 4) | hexDigit(s.charCodeAt(2));
+            const g = (hexDigit(s.charCodeAt(3)) << 4) | hexDigit(s.charCodeAt(4));
+            const b = (hexDigit(s.charCodeAt(5)) << 4) | hexDigit(s.charCodeAt(6));
+            return ((hash << 9) - hash + r * 65536 + g * 256 + b) | 0;
+        }
     }
 }
 
